@@ -44,20 +44,40 @@ public class DataManager {
     }
 
     private void loadData() {
+        // Define type tokens outside of the if blocks to avoid anonymous inner classes
+        Type deckListType = new TypeToken<ArrayList<Deck>>() {}.getType();
+        Type resultListType = new TypeToken<ArrayList<QuizResult>>() {}.getType();
+        
         // Load decks
         String decksJson = sharedPreferences.getString(KEY_DECKS, null);
-        if (decksJson != null) {
-            Type deckListType = new TypeToken<ArrayList<Deck>>() {}.getType();
-            decks = gson.fromJson(decksJson, deckListType);
+        if (decksJson != null && !decksJson.isEmpty()) {
+            try {
+                decks = gson.fromJson(decksJson, deckListType);
+                // Ensure we don't have null list
+                if (decks == null) {
+                    decks = new ArrayList<>();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading decks: " + e.getMessage());
+                decks = new ArrayList<>();
+            }
         } else {
             decks = new ArrayList<>();
         }
 
         // Load quiz results
         String resultsJson = sharedPreferences.getString(KEY_QUIZ_RESULTS, null);
-        if (resultsJson != null) {
-            Type resultListType = new TypeToken<ArrayList<QuizResult>>() {}.getType();
-            quizResults = gson.fromJson(resultsJson, resultListType);
+        if (resultsJson != null && !resultsJson.isEmpty()) {
+            try {
+                quizResults = gson.fromJson(resultsJson, resultListType);
+                // Ensure we don't have null list
+                if (quizResults == null) {
+                    quizResults = new ArrayList<>();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading quiz results: " + e.getMessage());
+                quizResults = new ArrayList<>();
+            }
         } else {
             quizResults = new ArrayList<>();
         }
@@ -66,15 +86,25 @@ public class DataManager {
     private void saveData() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         
-        // Save decks
-        String decksJson = gson.toJson(decks);
-        editor.putString(KEY_DECKS, decksJson);
-        
-        // Save quiz results
-        String resultsJson = gson.toJson(quizResults);
-        editor.putString(KEY_QUIZ_RESULTS, resultsJson);
-        
-        editor.apply();
+        try {
+            // Save decks (ensure decks is not null)
+            if (decks == null) {
+                decks = new ArrayList<>();
+            }
+            String decksJson = gson.toJson(decks);
+            editor.putString(KEY_DECKS, decksJson);
+            
+            // Save quiz results (ensure quizResults is not null)
+            if (quizResults == null) {
+                quizResults = new ArrayList<>();
+            }
+            String resultsJson = gson.toJson(quizResults);
+            editor.putString(KEY_QUIZ_RESULTS, resultsJson);
+            
+            editor.apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving data: " + e.getMessage());
+        }
     }
 
     // Deck operations
