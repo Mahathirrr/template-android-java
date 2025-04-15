@@ -47,8 +47,8 @@ public class DataManager {
         // Load decks
         String decksJson = sharedPreferences.getString(KEY_DECKS, null);
         if (decksJson != null) {
-            Type type = new TypeToken<ArrayList<Deck>>() {}.getType();
-            decks = gson.fromJson(decksJson, type);
+            Type deckListType = new TypeToken<ArrayList<Deck>>() {}.getType();
+            decks = gson.fromJson(decksJson, deckListType);
         } else {
             decks = new ArrayList<>();
         }
@@ -56,8 +56,8 @@ public class DataManager {
         // Load quiz results
         String resultsJson = sharedPreferences.getString(KEY_QUIZ_RESULTS, null);
         if (resultsJson != null) {
-            Type type = new TypeToken<ArrayList<QuizResult>>() {}.getType();
-            quizResults = gson.fromJson(resultsJson, type);
+            Type resultListType = new TypeToken<ArrayList<QuizResult>>() {}.getType();
+            quizResults = gson.fromJson(resultsJson, resultListType);
         } else {
             quizResults = new ArrayList<>();
         }

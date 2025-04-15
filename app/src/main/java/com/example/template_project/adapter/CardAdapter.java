@@ -54,7 +54,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
         return cards != null ? cards.size() : 0;
     }
 
-    static class CardViewHolder extends RecyclerView.ViewHolder {
+    public static class CardViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvCardFront;
         private final TextView tvCardBack;
         private final ImageView ivFlipCard;
