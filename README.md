@@ -15,7 +15,7 @@ A simple yet powerful flashcard application for Android that helps users create 
 
 - **Language**: Java
 - **Target SDK**: 34
-- **Minimum SDK**: 24 (Android 7.0 Nougat)
+- **Minimum SDK**: 26 (Android 8.0 Oreo)
 - **Architecture**: Single-activity with RecyclerViews for deck and card lists
 - **Data Storage**: SharedPreferences with GSON serialization
 - **UI Components**: Material Design components for a modern look and feel
