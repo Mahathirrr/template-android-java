@@ -43,65 +43,66 @@ public class DataManager {
         return instance;
     }
 
+    // Define type tokens as static fields to avoid anonymous inner class issues
+    private static final Type DECK_LIST_TYPE = new TypeToken<List<Deck>>(){}.getType();
+    private static final Type QUIZ_RESULT_LIST_TYPE = new TypeToken<List<QuizResult>>(){}.getType();
+    
     private void loadData() {
-        // Define type tokens outside of the if blocks to avoid anonymous inner classes
-        Type deckListType = new TypeToken<ArrayList<Deck>>() {}.getType();
-        Type resultListType = new TypeToken<ArrayList<QuizResult>>() {}.getType();
+        // Initialize empty collections first to avoid null references
+        decks = new ArrayList<>();
+        quizResults = new ArrayList<>();
         
-        // Load decks
-        String decksJson = sharedPreferences.getString(KEY_DECKS, null);
-        if (decksJson != null && !decksJson.isEmpty()) {
-            try {
-                decks = gson.fromJson(decksJson, deckListType);
-                // Ensure we don't have null list
-                if (decks == null) {
-                    decks = new ArrayList<>();
+        try {
+            // Load decks
+            String decksJson = sharedPreferences.getString(KEY_DECKS, "");
+            if (decksJson != null && !decksJson.isEmpty()) {
+                List<Deck> loadedDecks = gson.fromJson(decksJson, DECK_LIST_TYPE);
+                if (loadedDecks != null) {
+                    decks = loadedDecks;
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading decks: " + e.getMessage());
-                decks = new ArrayList<>();
             }
-        } else {
+    
+            // Load quiz results
+            String resultsJson = sharedPreferences.getString(KEY_QUIZ_RESULTS, "");
+            if (resultsJson != null && !resultsJson.isEmpty()) {
+                List<QuizResult> loadedResults = gson.fromJson(resultsJson, QUIZ_RESULT_LIST_TYPE);
+                if (loadedResults != null) {
+                    quizResults = loadedResults;
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading data: " + e.getMessage());
+            // Ensure we have empty collections if loading fails
             decks = new ArrayList<>();
-        }
-
-        // Load quiz results
-        String resultsJson = sharedPreferences.getString(KEY_QUIZ_RESULTS, null);
-        if (resultsJson != null && !resultsJson.isEmpty()) {
-            try {
-                quizResults = gson.fromJson(resultsJson, resultListType);
-                // Ensure we don't have null list
-                if (quizResults == null) {
-                    quizResults = new ArrayList<>();
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading quiz results: " + e.getMessage());
-                quizResults = new ArrayList<>();
-            }
-        } else {
             quizResults = new ArrayList<>();
         }
     }
 
     private void saveData() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        
         try {
-            // Save decks (ensure decks is not null)
+            // Ensure collections are not null before saving
             if (decks == null) {
                 decks = new ArrayList<>();
             }
-            String decksJson = gson.toJson(decks);
-            editor.putString(KEY_DECKS, decksJson);
             
-            // Save quiz results (ensure quizResults is not null)
             if (quizResults == null) {
                 quizResults = new ArrayList<>();
             }
-            String resultsJson = gson.toJson(quizResults);
+            
+            // Create editor and save data
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            
+            // Convert to JSON and save
+            String decksJson = gson.toJson(decks, DECK_LIST_TYPE);
+            editor.putString(KEY_DECKS, decksJson);
+            
+            String resultsJson = gson.toJson(quizResults, QUIZ_RESULT_LIST_TYPE);
             editor.putString(KEY_QUIZ_RESULTS, resultsJson);
             
+            // Apply changes
             editor.apply();
+            
+            Log.d(TAG, "Data saved successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error saving data: " + e.getMessage());
         }
@@ -109,12 +110,24 @@ public class DataManager {
 
     // Deck operations
     public List<Deck> getAllDecks() {
+        if (decks == null) {
+            decks = new ArrayList<>();
+        }
         return new ArrayList<>(decks);
     }
 
     public Deck getDeckById(String deckId) {
+        if (decks == null) {
+            decks = new ArrayList<>();
+            return null;
+        }
+        
+        if (deckId == null) {
+            return null;
+        }
+        
         for (Deck deck : decks) {
-            if (deck.getId().equals(deckId)) {
+            if (deck != null && deckId.equals(deck.getId())) {
                 return deck;
             }
         }
@@ -122,13 +135,29 @@ public class DataManager {
     }
 
     public void addDeck(Deck deck) {
-        decks.add(deck);
-        saveData();
+        if (decks == null) {
+            decks = new ArrayList<>();
+        }
+        
+        if (deck != null) {
+            decks.add(deck);
+            saveData();
+        }
     }
 
     public void updateDeck(Deck updatedDeck) {
+        if (decks == null || updatedDeck == null) {
+            return;
+        }
+        
+        String updatedDeckId = updatedDeck.getId();
+        if (updatedDeckId == null) {
+            return;
+        }
+        
         for (int i = 0; i < decks.size(); i++) {
-            if (decks.get(i).getId().equals(updatedDeck.getId())) {
+            Deck deck = decks.get(i);
+            if (deck != null && updatedDeckId.equals(deck.getId())) {
                 decks.set(i, updatedDeck);
                 saveData();
                 return;
@@ -137,8 +166,13 @@ public class DataManager {
     }
 
     public void deleteDeck(String deckId) {
+        if (decks == null || deckId == null) {
+            return;
+        }
+        
         for (int i = 0; i < decks.size(); i++) {
-            if (decks.get(i).getId().equals(deckId)) {
+            Deck deck = decks.get(i);
+            if (deck != null && deckId.equals(deck.getId())) {
                 decks.remove(i);
                 saveData();
                 return;
@@ -148,6 +182,10 @@ public class DataManager {
 
     // Card operations
     public void addCardToDeck(String deckId, Flashcard card) {
+        if (deckId == null || card == null) {
+            return;
+        }
+        
         Deck deck = getDeckById(deckId);
         if (deck != null) {
             deck.addCard(card);
@@ -156,28 +194,45 @@ public class DataManager {
     }
 
     public void updateCard(String deckId, Flashcard updatedCard) {
+        if (deckId == null || updatedCard == null) {
+            return;
+        }
+        
         Deck deck = getDeckById(deckId);
         if (deck != null) {
             List<Flashcard> cards = deck.getCards();
-            for (int i = 0; i < cards.size(); i++) {
-                if (cards.get(i).getId().equals(updatedCard.getId())) {
-                    cards.set(i, updatedCard);
-                    saveData();
-                    return;
+            if (cards != null) {
+                String updatedCardId = updatedCard.getId();
+                if (updatedCardId != null) {
+                    for (int i = 0; i < cards.size(); i++) {
+                        Flashcard card = cards.get(i);
+                        if (card != null && updatedCardId.equals(card.getId())) {
+                            cards.set(i, updatedCard);
+                            saveData();
+                            return;
+                        }
+                    }
                 }
             }
         }
     }
 
     public void deleteCard(String deckId, String cardId) {
+        if (deckId == null || cardId == null) {
+            return;
+        }
+        
         Deck deck = getDeckById(deckId);
         if (deck != null) {
             List<Flashcard> cards = deck.getCards();
-            for (int i = 0; i < cards.size(); i++) {
-                if (cards.get(i).getId().equals(cardId)) {
-                    cards.remove(i);
-                    saveData();
-                    return;
+            if (cards != null) {
+                for (int i = 0; i < cards.size(); i++) {
+                    Flashcard card = cards.get(i);
+                    if (card != null && cardId.equals(card.getId())) {
+                        cards.remove(i);
+                        saveData();
+                        return;
+                    }
                 }
             }
         }
@@ -185,6 +240,10 @@ public class DataManager {
 
     // Quiz operations
     public List<Flashcard> getRandomizedCards(String deckId) {
+        if (deckId == null) {
+            return new ArrayList<>();
+        }
+        
         Deck deck = getDeckById(deckId);
         if (deck != null && deck.getCards() != null && !deck.getCards().isEmpty()) {
             List<Flashcard> randomizedCards = new ArrayList<>(deck.getCards());
@@ -195,14 +254,27 @@ public class DataManager {
     }
 
     public void saveQuizResult(QuizResult result) {
+        if (result == null) {
+            return;
+        }
+        
+        if (quizResults == null) {
+            quizResults = new ArrayList<>();
+        }
+        
         quizResults.add(result);
         saveData();
     }
 
     public List<QuizResult> getQuizResultsForDeck(String deckId) {
         List<QuizResult> results = new ArrayList<>();
+        
+        if (deckId == null || quizResults == null) {
+            return results;
+        }
+        
         for (QuizResult result : quizResults) {
-            if (result.getDeckId().equals(deckId)) {
+            if (result != null && deckId.equals(result.getDeckId())) {
                 results.add(result);
             }
         }
