@@ -25,8 +25,8 @@ public class Deck implements Serializable {
 
     public Deck(String name, String description) {
         this();
-        this.name = name;
-        this.description = description;
+        this.name = name != null ? name : "";
+        this.description = description != null ? description : "";
     }
 
     public String getId() {
@@ -38,7 +38,7 @@ public class Deck implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return name != null ? name : "";
     }
 
     public void setName(String name) {
@@ -47,7 +47,7 @@ public class Deck implements Serializable {
     }
 
     public String getDescription() {
-        return description;
+        return description != null ? description : "";
     }
 
     public void setDescription(String description) {
