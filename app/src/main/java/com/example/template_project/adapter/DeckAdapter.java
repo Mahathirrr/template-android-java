@@ -53,7 +53,7 @@ public class DeckAdapter extends RecyclerView.Adapter<DeckAdapter.DeckViewHolder
         return decks != null ? decks.size() : 0;
     }
 
-    static class DeckViewHolder extends RecyclerView.ViewHolder {
+    public static class DeckViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvDeckName;
         private final TextView tvDeckDescription;
         private final TextView tvCardCount;
