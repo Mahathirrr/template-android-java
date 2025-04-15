@@ -45,8 +45,12 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        Flashcard card = cards.get(position);
-        holder.bind(card, listener);
+        if (cards != null && position < cards.size()) {
+            Flashcard card = cards.get(position);
+            if (card != null) {
+                holder.bind(card, listener);
+            }
+        }
     }
 
     @Override
@@ -72,17 +76,21 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
         }
 
         public void bind(final Flashcard card, final OnCardClickListener listener) {
-            tvCardFront.setText(card.getFront());
-            tvCardBack.setText(card.getBack());
-            tvCardBack.setVisibility(isShowingBack ? View.VISIBLE : View.GONE);
+            if (card != null) {
+                tvCardFront.setText(card.getFront() != null ? card.getFront() : "");
+                tvCardBack.setText(card.getBack() != null ? card.getBack() : "");
+                tvCardBack.setVisibility(isShowingBack ? View.VISIBLE : View.GONE);
 
-            itemView.setOnClickListener(v -> listener.onCardClick(card));
-            ivEditCard.setOnClickListener(v -> listener.onEditCard(card));
-            ivDeleteCard.setOnClickListener(v -> listener.onDeleteCard(card));
-            ivFlipCard.setOnClickListener(v -> {
-                isShowingBack = !isShowingBack;
-                listener.onFlipCard(this, card);
-            });
+                if (listener != null) {
+                    itemView.setOnClickListener(v -> listener.onCardClick(card));
+                    ivEditCard.setOnClickListener(v -> listener.onEditCard(card));
+                    ivDeleteCard.setOnClickListener(v -> listener.onDeleteCard(card));
+                    ivFlipCard.setOnClickListener(v -> {
+                        isShowingBack = !isShowingBack;
+                        listener.onFlipCard(this, card);
+                    });
+                }
+            }
         }
 
         public void flipCard() {

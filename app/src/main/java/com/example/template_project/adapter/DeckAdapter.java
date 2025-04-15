@@ -44,8 +44,12 @@ public class DeckAdapter extends RecyclerView.Adapter<DeckAdapter.DeckViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull DeckViewHolder holder, int position) {
-        Deck deck = decks.get(position);
-        holder.bind(deck, listener);
+        if (decks != null && position < decks.size()) {
+            Deck deck = decks.get(position);
+            if (deck != null) {
+                holder.bind(deck, listener);
+            }
+        }
     }
 
     @Override
@@ -70,15 +74,19 @@ public class DeckAdapter extends RecyclerView.Adapter<DeckAdapter.DeckViewHolder
         }
 
         public void bind(final Deck deck, final OnDeckClickListener listener) {
-            tvDeckName.setText(deck.getName());
-            tvDeckDescription.setText(deck.getDescription());
-            
-            int cardCount = deck.getCardCount();
-            tvCardCount.setText(cardCount + " " + (cardCount == 1 ? "card" : "cards"));
+            if (deck != null) {
+                tvDeckName.setText(deck.getName() != null ? deck.getName() : "");
+                tvDeckDescription.setText(deck.getDescription() != null ? deck.getDescription() : "");
+                
+                int cardCount = deck.getCardCount();
+                tvCardCount.setText(cardCount + " " + (cardCount == 1 ? "card" : "cards"));
 
-            itemView.setOnClickListener(v -> listener.onDeckClick(deck));
-            ivEditDeck.setOnClickListener(v -> listener.onEditDeck(deck));
-            ivDeleteDeck.setOnClickListener(v -> listener.onDeleteDeck(deck));
+                if (listener != null) {
+                    itemView.setOnClickListener(v -> listener.onDeckClick(deck));
+                    ivEditDeck.setOnClickListener(v -> listener.onEditDeck(deck));
+                    ivDeleteDeck.setOnClickListener(v -> listener.onDeleteDeck(deck));
+                }
+            }
         }
     }
 }
