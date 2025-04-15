@@ -24,7 +24,7 @@ public class QuizResult implements Serializable {
 
     public QuizResult(String deckId, int totalCards) {
         this();
-        this.deckId = deckId;
+        this.deckId = deckId != null ? deckId : "";
         this.totalCards = totalCards;
     }
 
@@ -37,7 +37,7 @@ public class QuizResult implements Serializable {
     }
 
     public String getDeckId() {
-        return deckId;
+        return deckId != null ? deckId : "";
     }
 
     public void setDeckId(String deckId) {

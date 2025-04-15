@@ -21,8 +21,8 @@ public class Flashcard implements Serializable {
 
     public Flashcard(String front, String back) {
         this();
-        this.front = front;
-        this.back = back;
+        this.front = front != null ? front : "";
+        this.back = back != null ? back : "";
     }
 
     public String getId() {
@@ -34,7 +34,7 @@ public class Flashcard implements Serializable {
     }
 
     public String getFront() {
-        return front;
+        return front != null ? front : "";
     }
 
     public void setFront(String front) {
@@ -43,7 +43,7 @@ public class Flashcard implements Serializable {
     }
 
     public String getBack() {
-        return back;
+        return back != null ? back : "";
     }
 
     public void setBack(String back) {
